@@ -6,6 +6,11 @@ import (
 	"strconv"
 )
 
+type Mapping struct {
+	CardNames []string
+	DeckNames []string
+}
+
 func Headings(wrkbook *excelize.File, row string) {
 	curcell := ""
 	i := 0
@@ -20,10 +25,6 @@ func Headings(wrkbook *excelize.File, row string) {
 
 func TwoCellFormula(formulaType, firstCell, lastCell string) string {
 	return formulaType + "(" + firstCell + ":" + lastCell + ")"
-}
-
-func SingleHistoricalFreq(freq float64, impact int) string {
-	return ""
 }
 
 func main() {
