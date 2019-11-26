@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"github.com/360EntSecGroup-Skylar/excelize"
+	"os"
 	"strconv"
+
+	"github.com/360EntSecGroup-Skylar/excelize"
 )
 
 var CardNames []string
@@ -21,12 +24,17 @@ func Headings(wrkbook *excelize.File, column string) {
 		wrkbook.SetCellValue("Sheet1", curcell, 2.02)
 	}
 	curcell = column + strconv.Itoa(i+1)
-	formula := TwoCellFormula("Sum", column+strconv.Itoa(1), column+strconv.Itoa(2))
-	wrkbook.SetCellFormula("Sheet1", curcell, formula)
 }
 
 func Matchups(wrkbook *excelize.File, row int) {
 	//set up matchups in B column
+	wrkbook.SetCellValue("Sheet1", "B"+strconv.Itoa(row), "Matchup")
+	row += 1
+	index := row
+	for index < row+len(DeckNames) {
+		wrkbook.SetCellValue("Sheet1", "B"+strconv.Itoa(index), DeckNames[index-row])
+		index++
+	}
 }
 
 func ScoreVMean(wrkbook *excelize.File, row int) {
@@ -39,10 +47,54 @@ func TwoCellFormula(formulaType, firstCell, lastCell string) string {
 
 func main() {
 
+	//open defensive cards text file
+	file, err := os.Open("C:/Users/johnn/Documents/projects-yugioh/datasheets/defensivecards.txt")
+
+	if err != nil {
+		panic(err)
+	}
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+
+	//initialize CardNames slice
+
+	for scanner.Scan() {
+		if CardNames == nil {
+			CardNames = []string{scanner.Text()}
+		} else {
+			CardNames = append(CardNames, scanner.Text())
+		}
+	}
+
+	file.Close()
+
+	//open decks text file
+	file, err = os.Open("C:/Users/johnn/Documents/projects-yugioh/datasheets/metadecks.txt")
+
+	if err != nil {
+		panic(err)
+	}
+
+	scanner = bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+
+	//initialize CardNames slice
+
+	for scanner.Scan() {
+		if DeckNames == nil {
+			DeckNames = []string{scanner.Text()}
+		} else {
+			DeckNames = append(DeckNames, scanner.Text())
+		}
+	}
+
+	file.Close()
+
 	wrkbook := excelize.NewFile()
 	wrkbook.NewSheet("Sheet1")
-	Headings(wrkbook, "A")
-	err := wrkbook.SaveAs("C:/Users/johnn/Documents/projects-yugioh/datasheets/blanksheet.xlsx")
+	Matchups(wrkbook, 10)
+	err = wrkbook.SaveAs("C:/Users/johnn/Documents/projects-yugioh/datasheets/blanksheet.xlsx")
 	if err != nil {
 		fmt.Println(err)
 	}
