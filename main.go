@@ -114,13 +114,19 @@ func WeightedSum(wrkbook *excelize.File, row int, space bool, cursheet string) {
 	}
 }
 
-func ScoreVsMean(wrkbook *excelize.File, row int, cursheet string) {
+func ScoreVsMean(wrkbook *excelize.File, row int, space bool, cursheet string) {
+	//recalculate row to correct place
+	if space {
+		row += len(DeckNames) + 4
+	} else {
+		row += len(DeckNames) + 3
+	}
 	//set name of row
 	wrkbook.SetCellValue(cursheet, "B"+strconv.Itoa(row), "Score Vs Mean")
 	//set row string
 	formstr := strconv.Itoa(row - 1)
 	//grab weighted sums and conver to formula
-	formula := "SUM(E" + formstr + ":" + lettermapping[row+len(CardNames)] + formstr + ")/" + strconv.Itoa(len(CardNames))
+	formula := "SUM(E" + formstr + ":" + lettermapping[len(CardNames)+3] + formstr + ")/" + strconv.Itoa(len(CardNames))
 	//save formula cell to save work later
 	formcell := "C" + strconv.Itoa(row)
 	wrkbook.SetCellFormula(cursheet, formcell, formula)
@@ -201,15 +207,15 @@ func main() {
 	Headings(wrkbook, index, cursheet)
 	Matchups(wrkbook, index, cursheet)
 	WeightedSum(wrkbook, index, false, cursheet)
+	ScoreVsMean(wrkbook, index-3, false, cursheet)
 	index += len(DeckNames) + 5
-	ScoreVsMean(wrkbook, index-3, cursheet)
 	Headings(wrkbook, index, cursheet)
 	Matchups(wrkbook, index, cursheet)
 	SetStandardFormulas(wrkbook, index+1, cursheet)
 	WeightedSum(wrkbook, index, true, cursheet)
 	Frequency(wrkbook, index, cursheet)
+	ScoreVsMean(wrkbook, index-3, true, cursheet)
 	index += len(DeckNames) + 5
-	ScoreVsMean(wrkbook, index-2, cursheet)
 
 	err = wrkbook.SaveAs("C:/Users/johnn/Documents/projects-yugioh/datasheets/blanksheet.xlsx")
 	if err != nil {
