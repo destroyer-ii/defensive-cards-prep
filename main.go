@@ -50,8 +50,23 @@ var lettermapping = map[int]string{
 * Params: *excelize.File
 * Returns: Row that it ends on
  */
-func RawScoreSection(wrkbook *excelize.File) {
-
+func RawScoreSection(wrkbook *excelize.File, cursheet string) {
+	//setup section with repeatables
+	Headings(wrkbook, 2, cursheet)
+	Matchups(wrkbook, 2, cursheet)
+	WeightedSum(wrkbook, 2, false, cursheet)
+	ScoreVsMean(wrkbook, 2, false, cursheet)
+	//setup other info
+	//standard headings and key
+	wrkbook.SetCellValue(cursheet, "A1", "<Put Name of Sheet Here>")
+	wrkbook.SetCellValue(cursheet, "A2", "Blowout = 4pts")
+	wrkbook.SetCellValue(cursheet, "A3", "High Impact = 4pts")
+	wrkbook.SetCellValue(cursheet, "A4", "Mid Impact = 2 pts")
+	wrkbook.SetCellValue(cursheet, "A5", "Low Impact = 1pt")
+	wrkbook.SetCellValue(cursheet, "A6", "Non-Factor = 0pts")
+	wrkbook.SetCellValue(cursheet, "C2", "# represented")
+	wrkbook.SetCellValue(cursheet, "D2", "% frequency")
+	wrkbook.SetCellValue(cursheet, "B"+strconv.Itoa(3+len(DeckNames)), "Raw Score")
 }
 
 //---------------------------------------------------------------------------------
@@ -117,9 +132,9 @@ func WeightedSum(wrkbook *excelize.File, row int, space bool, cursheet string) {
 func ScoreVsMean(wrkbook *excelize.File, row int, space bool, cursheet string) {
 	//recalculate row to correct place
 	if space {
-		row += len(DeckNames) + 4
-	} else {
 		row += len(DeckNames) + 3
+	} else {
+		row += len(DeckNames) + 2
 	}
 	//set name of row
 	wrkbook.SetCellValue(cursheet, "B"+strconv.Itoa(row), "Score Vs Mean")
@@ -204,17 +219,14 @@ func main() {
 	cursheet := "Sheet1"
 	wrkbook.NewSheet(cursheet)
 	index := 2
-	Headings(wrkbook, index, cursheet)
-	Matchups(wrkbook, index, cursheet)
-	WeightedSum(wrkbook, index, false, cursheet)
-	ScoreVsMean(wrkbook, index-3, false, cursheet)
+	RawScoreSection(wrkbook, cursheet)
 	index += len(DeckNames) + 5
 	Headings(wrkbook, index, cursheet)
 	Matchups(wrkbook, index, cursheet)
 	SetStandardFormulas(wrkbook, index+1, cursheet)
 	WeightedSum(wrkbook, index, true, cursheet)
 	Frequency(wrkbook, index, cursheet)
-	ScoreVsMean(wrkbook, index-3, true, cursheet)
+	ScoreVsMean(wrkbook, index, true, cursheet)
 	index += len(DeckNames) + 5
 
 	err = wrkbook.SaveAs("C:/Users/johnn/Documents/projects-yugioh/datasheets/blanksheet.xlsx")
